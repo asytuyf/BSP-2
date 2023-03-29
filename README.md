@@ -16,8 +16,8 @@ None
 
 ## Not currently implemented
 
-1 - Castling
-2 - En passant
-3 - Promotion
-4 - Checkmates
-5 - Stalemate
+- Castling
+- En passant
+- Promotion
+- Checkmates
+- Stalemate
