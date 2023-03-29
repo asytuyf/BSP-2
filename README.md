@@ -1,4 +1,6 @@
 # BSP-2
+![](https://github.com/asytuyf/BSP-2/blob/main/Duckchess.png)
+
 
 My 2nd project for 2 semester at the university of Luxembourg.
 
