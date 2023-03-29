@@ -2,7 +2,7 @@
 ![](https://github.com/asytuyf/BSP-2/blob/main/Duckchess.png)
 
 
-My 2nd project for 2 semester at the university of Luxembourg.
+A terminal line chess game as my 2nd project for my 2nd semester at the university of Luxembourg.
 
 # Description
 
@@ -13,3 +13,11 @@ The duck chess variant adds a rubber duck that both players can move. The duck b
 # Prerequisites
 
 None
+
+## Not currently implemented
+
+1 - Castling
+2 - En passant
+3 - Promotion
+4 - Checkmates
+5 - Stalemate
