@@ -20,8 +20,8 @@ class Board:
             'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'X',
             'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'X',
             'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'X',
-            'X', 'p', 'p', ' ', 'p', 'p', 'p', 'p', 'p', 'X',
-            'X', 'r', 'n', 'b', 'q', 'k', ' ', 'n', 'r', 'X',
+            'X', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'X',
+            'X', 'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r', 'X',
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
         ]
@@ -55,8 +55,8 @@ class Board:
         """
         Prints the board in the terminal
         """
-        # for i in range(2, 10):
-        for i in range(9, 1, -1):
+        for i in range(2, 10):
+            # for i in range(9, 1, -1):
             row = ""
             for j in range(1, 9):
                 row = row+self.board[i*10+j]
@@ -250,6 +250,7 @@ class Board:
             for m in q_moves:
                 for i in range(1, 8):
                     new_pos = pos + m * i
+                    # ! If i delete this i get error
                     if not (21 <= new_pos <= 98):
                         break
                     if self.board[new_pos] != 'X':
@@ -324,7 +325,10 @@ class Board:
 
         return f"White_eval: {white_eval}\nBlack_eval: {black_eval}"
 
-    def count_remaining_pieces(self):
+    def captured_pieces(self):
+        """
+        A function that checks how many pieces were captured from a player and tells you which ones were captured
+        """
         black_pieces = 'RNBQKP'
         white_pieces = 'rnbqkp'
 
@@ -334,26 +338,39 @@ class Board:
         current_white_pieces = 0
         current_black_pieces = 0
 
+        current_piece_count = {'R': 0, 'N': 0, 'B': 0, 'Q': 0, 'K': 0,
+                               'P': 0, 'r': 0, 'n': 0, 'b': 0, 'q': 0, 'k': 0, 'p': 0}
+
         for cell in self.board:
             if cell in white_pieces:
                 current_white_pieces += 1
+                current_piece_count[cell] += 1
             elif cell in black_pieces:
                 current_black_pieces += 1
+                current_piece_count[cell] += 1
 
         captured_white_pieces = total_white_pieces - current_white_pieces
         captured_black_pieces = total_black_pieces - current_black_pieces
-        # ! needs to implement the rest of the function
-        return captured_white_pieces, captured_black_pieces
+        initial_piece_count = {'R': 2, 'N': 2, 'B': 2, 'Q': 1, 'K': 1, 'P': 8,
+                               'r': 2, 'n': 2, 'b': 2, 'q': 1, 'k': 1, 'p': 8}
+
+        captured_pieces = {}
+        for piece, count in current_piece_count.items():
+            captured_count = initial_piece_count[piece] - count
+            if captured_count > 0:
+                captured_pieces[piece] = captured_count
+
+        return captured_white_pieces, captured_black_pieces, captured_pieces
 
 
 my_board = Board()
 my_board.print_board()
-print(my_board.findWhiteMoves(22))
 print("Black moves : ", my_board.findAllBlackMoves())
 print("White moves : ", my_board.findAllWHiteMoves())
 print(my_board.evaluate_score())
 
 
-captured_white_pieces, captured_black_pieces = my_board.count_remaining_pieces()
+captured_white_pieces, captured_black_pieces, captured_pieces = my_board.captured_pieces()
 print("The number of captured white pieces:", captured_white_pieces)
 print("The number of captured black pieces:", captured_black_pieces)
+print("The captured pieces are :", captured_pieces)
