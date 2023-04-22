@@ -4,6 +4,7 @@
 
 evalcount = 0
 
+
 class Board:
     """
     Represents the configuration of a chess board.
@@ -12,7 +13,6 @@ class Board:
     def __init__(self):
         # This board isn't in it's initial state it's like this for testing purposes
         self.board = [
-
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
             'X', 'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R', 'X',
@@ -26,7 +26,7 @@ class Board:
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
         ]
-        
+
     def notation_to_index(self, notation):
         """
         Helper function for move_piece
@@ -44,14 +44,13 @@ class Board:
         row = 9 - index // 10
         notation = chr(col + ord('a') - 1) + str(row)
         return notation
-    
+
     def get_piece(self, position):
         """
         Gets the piece at the given position.
         """
         row, col = position
-        # converts 2D coordinate to 1D index :
-        index = row * 10 + col  # Changed from *8 to *10
+        index = row * 10 + col  # Using *10 to match your board representation
         return self.board[index]
 
     def set_piece(self, position, piece):
@@ -59,16 +58,18 @@ class Board:
         Sets the piece at the given position.
         """
         row, col = position
-        index = row * 8 + col  # convert 2D coordinate to 1D index
+        index = row * 10 + col  # Using *10 to match your board representation
         self.board[index] = piece
 
-    def move_piece(self, start, end):
+    def move_piece(self, start_notation, end_notation):
         """
         Moves the piece from the start position to the end position.
         """
-        piece = self.get_piece(start)
-        self.set_piece(start, "")
-        self.set_piece(end, piece)
+        start = self.notation_to_index(start_notation)
+        end = self.notation_to_index(end_notation)
+        piece = self.get_piece((start // 10, start % 10))
+        self.set_piece((start // 10, start % 10), " ")
+        self.set_piece((end // 10, end % 10), piece)
 
     def print_board(self):
         """
@@ -76,7 +77,7 @@ class Board:
         """
         for i in range(2, 10):
             # for i in range(9, 1, -1):
-            row = ""
+            row = " "
             for j in range(1, 9):
                 row = row+self.board[i*10+j]
             print(row)
@@ -145,18 +146,33 @@ class Board:
 
             for m in q_moves:
                 for i in range(1, 8):
+                    # new_pos = pos + m * i
+                    # # ! If i delete this it gives me error :
+                    # if not (21 <= new_pos <= 98):
+                    #     break
+                    # if self.board[new_pos] != 'X':
+                    #     if self.board[new_pos] == " ":
+                    #         res.append(('q', pos, new_pos))
+                    #     elif self.board[new_pos].isupper():
+                    #         res.append(('q', pos, new_pos))
+                    #         break
+                    #     elif self.board[new_pos].islower():
+                    #         break
+                    #             for i in range(1, 8):
                     new_pos = pos + m * i
                     # ! If i delete this it gives me error :
-                    if not (21 <= new_pos <= 98):
+                    # if not (21 <= new_pos <= 98):
+
+                    if self.board[new_pos] == 'X':
                         break
-                    if self.board[new_pos] != 'X':
-                        if self.board[new_pos] == " ":
-                            res.append(('q', pos, new_pos))
-                        elif self.board[new_pos].isupper():
-                            res.append(('q', pos, new_pos))
-                            break
-                        elif self.board[new_pos].islower():
-                            break
+                    if self.board[new_pos] == " ":
+                        res.append(('q', pos, new_pos))
+                    elif self.board[new_pos].isupper():
+                        res.append(('q', pos, new_pos))
+                        break
+                    elif self.board[new_pos].islower():
+                        break
+
         # PAWN:
         elif self.board[pos] == 'p':
             p_moves = [-10, -20]
@@ -180,12 +196,10 @@ class Board:
                     res.append(('p', pos, new_pos))
         return res
 
-    def findAllWHiteMoves(self):
+    def findAllWhiteMoves(self):
         """
         Using the function findWhiteMoves this function goes through all of the white pieces and finds all the available moves for the white pieces
         """
-        def can_take_b(target_pos):
-            return self.board[target_pos] != "X" and self.board[target_pos].isupper()
 
         def chess_notation(pos):
             """Translate the pos to chess coordinations"""
@@ -337,6 +351,7 @@ class Board:
             for j in range(1, 9):
                 piece = board.get_piece((i, j))
                 result += piece_values[piece]
+        return result
 
     def captured_pieces(self):
         white_pieces = 'rnbqkp'
@@ -480,3 +495,12 @@ for i in range(6):
     my_board.print_board()
     print("evalcount", evalcount)
     evalcount = 0
+
+my_board.print_board()
+print("The number of captured white pieces:", captured_white_pieces)
+print("The number of captured black pieces:", captured_black_pieces)
+if captured_pieces == {}:
+    print("No pieces were captured")
+else:
+    print("The captured pieces are :", captured_pieces)
+print(my_board.evaluate_score())
