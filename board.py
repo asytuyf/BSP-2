@@ -339,14 +339,11 @@ class Board:
                 result += piece_values[piece]
 
     def captured_pieces(self):
-        """
-        A function that checks how many pieces were captured from a player and tells you which ones were captured
-        """
-        black_pieces = 'RNBQKP'
         white_pieces = 'rnbqkp'
+        black_pieces = 'RNBQKP'
 
-        total_white_pieces = 16  # Total number of white pieces at the start
-        total_black_pieces = 16  # Total number of black pieces at the start
+        total_white_pieces = 16
+        total_black_pieces = 16
 
         current_white_pieces = 0
         current_black_pieces = 0
@@ -354,13 +351,15 @@ class Board:
         current_piece_count = {'R': 0, 'N': 0, 'B': 0, 'Q': 0, 'K': 0,
                                'P': 0, 'r': 0, 'n': 0, 'b': 0, 'q': 0, 'k': 0, 'p': 0}
 
-        for cell in self.board:
-            if cell in white_pieces:
-                current_white_pieces += 1
-                current_piece_count[cell] += 1
-            elif cell in black_pieces:
-                current_black_pieces += 1
-                current_piece_count[cell] += 1
+        for row in range(2, 10):  # Only iterate over the 8x8 chess board
+            for col in range(1, 9):
+                cell = self.board[row * 10 + col]
+                if cell in white_pieces:
+                    current_white_pieces += 1
+                    current_piece_count[cell] += 1
+                elif cell in black_pieces:
+                    current_black_pieces += 1
+                    current_piece_count[cell] += 1
 
         captured_white_pieces = total_white_pieces - current_white_pieces
         captured_black_pieces = total_black_pieces - current_black_pieces
@@ -376,14 +375,108 @@ class Board:
         return captured_white_pieces, captured_black_pieces, captured_pieces
 
 
+# Alpha-beta Algorithm :
+
+
+    def generate_moves(self, is_white_turn):
+        if is_white_turn:
+            return self.findAllWhiteMoves()
+        else:
+            return self.findAllBlackMoves()
+
+    def make_move(self, move):
+        piece, start_notation, end_notation = move
+        start_index = self.notation_to_index(start_notation)
+        end_index = self.notation_to_index(end_notation)
+        start_position = (start_index // 10, start_index % 10)
+        end_position = (end_index // 10, end_index % 10)
+        captured_piece = self.get_piece(end_position)
+        if captured_piece != " ":
+            self.remove_piece(end_position)
+        self.move_piece(start_notation, end_notation)
+        return captured_piece
+
+    # ! not sure
+
+    def undo_move(self, move, captured_piece):
+        piece, start_notation, end_notation = move
+        end_index = self.notation_to_index(end_notation)
+        end_position = (end_index // 10, end_index % 10)
+
+        self.move_piece(end_notation, start_notation)
+        self.set_piece(end_position, captured_piece)
+
+    # Helper function
+    def remove_piece(self, position):
+        row, col = position
+        index = row * 10 + col
+        self.board[index] = " "
+
+    def alpha_beta(self, board, depth, alpha, beta, maximizing_player):
+        if depth == 0:  # ! needs to also check if the game is over here
+            return self.evaluate_score()
+
+        if maximizing_player:
+            max_eval = float('-inf')
+            for move in board.findAllBlackMoves():
+                captured_piece = board.make_move(move)
+                eval = self.alpha_beta(board, depth - 1, alpha, beta, False)
+                board.undo_move(move, captured_piece)  # Undo the move
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+            return max_eval
+        else:
+            min_eval = float('inf')
+            for move in board.findAllWhiteMoves():
+                captured_piece = board.make_move(move)
+                eval = self.alpha_beta(board, depth - 1, alpha, beta, True)
+                board.undo_move(move, captured_piece)  # Undo the move
+                min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break
+            return min_eval
+
+    def find_best_move(self, depth, is_white_turn):
+        moves = self.generate_moves(is_white_turn)
+        best_move = None
+        best_eval = float('-inf') if is_white_turn else float('inf')
+
+        for move in moves:
+            captured_piece = self.make_move(move)
+            eval = self.alpha_beta(
+                self, depth - 1, float('-inf'), float('inf'), is_white_turn)
+            self.undo_move(move, captured_piece)
+
+            if is_white_turn and eval > best_eval:
+                best_eval = eval
+                best_move = move
+            elif not is_white_turn and eval < best_eval:
+                best_eval = eval
+                best_move = move
+
+        return best_move
+
+
+# Testing
 my_board = Board()
 my_board.print_board()
 print("Black moves : ", my_board.findAllBlackMoves())
-print("White moves : ", my_board.findAllWHiteMoves())
+print("White moves : ", my_board.findAllWhiteMoves())
 print(my_board.evaluate_score())
-
-
 captured_white_pieces, captured_black_pieces, captured_pieces = my_board.captured_pieces()
-print("The number of captured white pieces:", captured_white_pieces)
-print("The number of captured black pieces:", captured_black_pieces)
-print("The captured pieces are :", captured_pieces)
+for i in range(6):
+    best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+    print("Move : ", best_move)
+    my_board.make_move(best_move)
+    my_board.print_board()
+    print("evalcount", evalcount)
+    evalcount = 0
+    best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+    print("Move : ", best_move)
+    my_board.make_move(best_move)
+    my_board.print_board()
+    print("evalcount", evalcount)
+    evalcount = 0
