@@ -1,7 +1,8 @@
 
 # ! next week goals :
-# 1) code taking moves (done)
-# 2) code a beta version of an evaluation function (done)
+# 1) duck piece
+
+evalcount = 0
 
 class Board:
     """
@@ -25,7 +26,25 @@ class Board:
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
             'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X',
         ]
+        
+    def notation_to_index(self, notation):
+        """
+        Helper function for move_piece
+        """
+        col = ord(notation[0]) - ord('a') + 1
+        row = int(notation[1])
+        index = (10 - row) * 10 + col
+        return index
 
+    def index_to_notation(self, index):
+        """
+        Helper function for move_piece
+        """
+        col = index % 10
+        row = 9 - index // 10
+        notation = chr(col + ord('a') - 1) + str(row)
+        return notation
+    
     def get_piece(self, position):
         """
         Gets the piece at the given position.
@@ -307,23 +326,17 @@ class Board:
 
     def evaluate_score(board):
         """
-        This function evaluates the position of the pieces on the chess board and returns two values indicating the total value of the white pieces and the total value of the black pieces respectively. (some pieces hold more value than others)
+        This function evaluates the position of the pieces on the chess board and returns a value, if the value is positive then white is wining, if the value is negative then black is winning. (some pieces hold more value than others)
         """
-        piece_values = {'P': 1, 'N': 3, 'B': 3.5, 'R': 5, 'Q': 10, 'K': 100,
-                        'p': -1, 'n': -3, 'b': -3.5, 'r': -5, 'q': -10, 'k': -100}
-        white_eval = 0
-        black_eval = 0
+        global evalcount
+        evalcount += 1
+        piece_values = {' ': 0, 'P': -1, 'N': -3, 'B': -3.5, 'R': -5, 'Q': -10, 'K': -100,
+                        'p': 1, 'n': 3, 'b': 3.5, 'r': 5, 'q': 10, 'k': 100}
+        result = 0
         for i in range(2, 10):
             for j in range(1, 9):
                 piece = board.get_piece((i, j))
-                if piece != 'X' and piece != ' ':
-                    piece_value = piece_values[piece]
-                    if piece.isupper():
-                        black_eval += piece_value
-                    else:
-                        white_eval += piece_value
-
-        return f"White_eval: {white_eval}\nBlack_eval: {black_eval}"
+                result += piece_values[piece]
 
     def captured_pieces(self):
         """
