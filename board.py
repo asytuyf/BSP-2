@@ -469,10 +469,9 @@ class Board:
                     break
             return min_eval
 
-    def find_best_move(self, depth, is_white_turn):
+    def find_best_moves(self, depth, is_white_turn, num_moves=2):
         moves = self.generate_moves(is_white_turn)
-        best_move = None
-        best_eval = float('-inf') if is_white_turn else float('inf')
+        best_moves = []
 
         for move in moves:
             captured_piece = self.make_move(move)
@@ -480,14 +479,10 @@ class Board:
                 self, depth - 1, float('-inf'), float('inf'), is_white_turn)
             self.undo_move(move, captured_piece)
 
-            if is_white_turn and eval > best_eval:
-                best_eval = eval
-                best_move = move
-            elif not is_white_turn and eval < best_eval:
-                best_eval = eval
-                best_move = move
+            best_moves.append((move, eval))
 
-        return best_move
+        best_moves.sort(key=lambda x: x[1], reverse=is_white_turn)
+        return best_moves[:num_moves]
 
 
 # Testing
