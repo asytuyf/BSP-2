@@ -36,13 +36,12 @@ class Board:
         index = (10 - row) * 10 + col
         return index
 
-    def index_to_notation(self, index):
+    def index_to_notation(self, position):
         """
         Helper function for move_piece
         """
-        col = index % 10
-        row = 9 - index // 10
-        notation = chr(col + ord('a') - 1) + str(row)
+        row, col = position
+        notation = chr(col + ord('a') - 1) + str(10 - row)
         return notation
 
     def get_piece(self, position):
@@ -90,7 +89,7 @@ class Board:
         # Taking function :
 
         def can_take_w(target_pos):
-            return self.board[target_pos] != "X" and self.board[target_pos].isupper()
+            return self.board[target_pos] != "X" and self.board[target_pos].isupper() and self.board[target_pos] != "D"
         # KING:
         if self.board[pos] == 'k':
             k_moves = [-1, +1, -10, +10, -9, -11, +11, +9]
@@ -115,25 +114,29 @@ class Board:
                     if self.board[new_pos] != 'X':
                         if self.board[new_pos] == " ":
                             res.append(('r', pos, new_pos))
-                        elif self.board[new_pos].isupper():
+                        elif self.board[new_pos].isupper() and self.board[new_pos] != "D":
                             res.append(('r', pos, new_pos))
                             break
                         elif self.board[new_pos].islower():
                             break
 
         # BISHOP :
+        # ! make it better bc errors
         elif self.board[pos] == 'b':
             b_moves = [-11, +11, -9, +9]
             for m in b_moves:
                 for i in range(1, 8):
                     new_pos = pos + m * i
-                    # ! If i delete this it gives me error :
-                    if not (21 <= new_pos <= 98):
+                    new_row = new_pos // 10
+                    new_col = new_pos % 10
+
+                    if not (2 <= new_row <= 9) or not (1 <= new_col <= 8):
                         break
+
                     if self.board[new_pos] != 'X':
                         if self.board[new_pos] == " ":
                             res.append(('b', pos, new_pos))
-                        elif self.board[new_pos].isupper():
+                        elif self.board[new_pos].isupper() and self.board[new_pos] != "D":
                             res.append(('b', pos, new_pos))
                             break
                         elif self.board[new_pos].islower():
@@ -167,7 +170,7 @@ class Board:
                         break
                     if self.board[new_pos] == " ":
                         res.append(('q', pos, new_pos))
-                    elif self.board[new_pos].isupper():
+                    elif self.board[new_pos].isupper() and self.board[new_pos] != "D":
                         res.append(('q', pos, new_pos))
                         break
                     elif self.board[new_pos].islower():
@@ -344,7 +347,7 @@ class Board:
         """
         global evalcount
         evalcount += 1
-        piece_values = {' ': 0, 'P': -1, 'N': -3, 'B': -3.5, 'R': -5, 'Q': -10, 'K': -100,
+        piece_values = {'D': 0, ' ': 0, 'P': -1, 'N': -3, 'B': -3.5, 'R': -5, 'Q': -10, 'K': -100,
                         'p': 1, 'n': 3, 'b': 3.5, 'r': 5, 'q': 10, 'k': 100}
         result = 0
         for i in range(2, 10):
@@ -352,7 +355,7 @@ class Board:
                 piece = board.get_piece((i, j))
                 result += piece_values[piece]
         return result
-    
+
     def remove_duck_piece(self):
         for index, piece in enumerate(self.board):
             if piece == "D":
@@ -367,42 +370,42 @@ class Board:
             self.board[index] = "D"
         else:
             return "Can't make that move"
-        
-    def captured_pieces(self):
-        white_pieces = 'rnbqkp'
-        black_pieces = 'RNBQKP'
 
-        total_white_pieces = 16
-        total_black_pieces = 16
+    # def captured_pieces(self):
+    #     white_pieces = 'rnbqkp'
+    #     black_pieces = 'RNBQKP'
 
-        current_white_pieces = 0
-        current_black_pieces = 0
+    #     total_white_pieces = 16
+    #     total_black_pieces = 16
 
-        current_piece_count = {'R': 0, 'N': 0, 'B': 0, 'Q': 0, 'K': 0,
-                               'P': 0, 'r': 0, 'n': 0, 'b': 0, 'q': 0, 'k': 0, 'p': 0}
+    #     current_white_pieces = 0
+    #     current_black_pieces = 0
 
-        for row in range(2, 10):  # Only iterate over the 8x8 chess board
-            for col in range(1, 9):
-                cell = self.board[row * 10 + col]
-                if cell in white_pieces:
-                    current_white_pieces += 1
-                    current_piece_count[cell] += 1
-                elif cell in black_pieces:
-                    current_black_pieces += 1
-                    current_piece_count[cell] += 1
+    #     current_piece_count = {'R': 0, 'N': 0, 'B': 0, 'Q': 0, 'K': 0,
+    #                            'P': 0, 'r': 0, 'n': 0, 'b': 0, 'q': 0, 'k': 0, 'p': 0}
 
-        captured_white_pieces = total_white_pieces - current_white_pieces
-        captured_black_pieces = total_black_pieces - current_black_pieces
-        initial_piece_count = {'R': 2, 'N': 2, 'B': 2, 'Q': 1, 'K': 1, 'P': 8,
-                               'r': 2, 'n': 2, 'b': 2, 'q': 1, 'k': 1, 'p': 8}
+    #     for row in range(2, 10):  # Only iterate over the 8x8 chess board
+    #         for col in range(1, 9):
+    #             cell = self.board[row * 10 + col]
+    #             if cell in white_pieces:
+    #                 current_white_pieces += 1
+    #                 current_piece_count[cell] += 1
+    #             elif cell in black_pieces:
+    #                 current_black_pieces += 1
+    #                 current_piece_count[cell] += 1
 
-        captured_pieces = {}
-        for piece, count in current_piece_count.items():
-            captured_count = initial_piece_count[piece] - count
-            if captured_count > 0:
-                captured_pieces[piece] = captured_count
+    #     captured_white_pieces = total_white_pieces - current_white_pieces
+    #     captured_black_pieces = total_black_pieces - current_black_pieces
+    #     initial_piece_count = {'R': 2, 'N': 2, 'B': 2, 'Q': 1, 'K': 1, 'P': 8,
+    #                            'r': 2, 'n': 2, 'b': 2, 'q': 1, 'k': 1, 'p': 8}
 
-        return captured_white_pieces, captured_black_pieces, captured_pieces
+    #     captured_pieces = {}
+    #     for piece, count in current_piece_count.items():
+    #         captured_count = initial_piece_count[piece] - count
+    #         if captured_count > 0:
+    #             captured_pieces[piece] = captured_count
+
+    #     return captured_white_pieces, captured_black_pieces, captured_pieces
 
 
 # Alpha-beta Algorithm :
@@ -561,4 +564,71 @@ for i in range(6):
     my_board.print_board()
     print("evalcount", evalcount)
     evalcount = 0
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+# best_move = my_board.find_best_move(depth=3, is_white_turn=False)
+# print("Move : ", best_move)
+# my_board.make_move(best_move)
+
 print(my_board.evaluate_score())
