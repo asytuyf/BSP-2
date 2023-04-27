@@ -352,7 +352,22 @@ class Board:
                 piece = board.get_piece((i, j))
                 result += piece_values[piece]
         return result
+    
+    def remove_duck_piece(self):
+        for index, piece in enumerate(self.board):
+            if piece == "D":
+                self.board[index] = " "
+                break
 
+    def place_duck_piece(self, move):
+        piece, start_notation, end_notation = move
+        index = self.notation_to_index(end_notation)
+        if self.board[index] == " ":
+            self.remove_duck_piece()
+            self.board[index] = "D"
+        else:
+            return "Can't make that move"
+        
     def captured_pieces(self):
         white_pieces = 'rnbqkp'
         black_pieces = 'RNBQKP'
