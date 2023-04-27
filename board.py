@@ -1,4 +1,4 @@
-
+import random
 # ! next week goals :
 # 1) duck piece
 
@@ -491,26 +491,74 @@ my_board.print_board()
 print("Black moves : ", my_board.findAllBlackMoves())
 print("White moves : ", my_board.findAllWhiteMoves())
 print(my_board.evaluate_score())
-captured_white_pieces, captured_black_pieces, captured_pieces = my_board.captured_pieces()
 for i in range(6):
-    best_move = my_board.find_best_move(depth=3, is_white_turn=True)
+    best_move = my_board.find_best_moves(depth=3, is_white_turn=True)[0][0]
     print("Move : ", best_move)
     my_board.make_move(best_move)
-    my_board.print_board()
-    print("evalcount", evalcount)
-    evalcount = 0
-    best_move = my_board.find_best_move(depth=3, is_white_turn=False)
-    print("Move : ", best_move)
-    my_board.make_move(best_move)
+
+    opposition_best_moves = my_board.find_best_moves(
+        depth=3, is_white_turn=False)
+    opposition_best_move_index = 0
+
+    while True:
+        opposition_best_move = opposition_best_moves[opposition_best_move_index][0]
+        print("Opposition move : ", opposition_best_move)
+        result = my_board.place_duck_piece(opposition_best_move)
+        if result == "Can't make that move":
+            opposition_best_move_index += 1
+        else:
+            break
+
+        if opposition_best_move_index >= len(opposition_best_moves):
+            print("No valid moves left for the duck piece")
+            while True:
+                random_row = random.randint(2, 9)
+                random_col = random.randint(1, 8)
+                random_position = (random_row, random_col)
+                random_notation = my_board.index_to_notation(random_position)
+                if my_board.get_piece(random_position) == " ":
+                    my_board.place_duck_piece(("D", None, random_notation))
+                    print(
+                        f"Placing the duck piece at a random square: {random_notation}")
+                    break
+            break
+
     my_board.print_board()
     print("evalcount", evalcount)
     evalcount = 0
 
-my_board.print_board()
-print("The number of captured white pieces:", captured_white_pieces)
-print("The number of captured black pieces:", captured_black_pieces)
-if captured_pieces == {}:
-    print("No pieces were captured")
-else:
-    print("The captured pieces are :", captured_pieces)
+    best_move = my_board.find_best_moves(depth=3, is_white_turn=False)[0][0]
+    print("Move : ", best_move)
+    my_board.make_move(best_move)
+
+    opposition_best_moves = my_board.find_best_moves(
+        depth=3, is_white_turn=True)
+    opposition_best_move_index = 0
+
+    while True:
+        opposition_best_move = opposition_best_moves[opposition_best_move_index][0]
+        print("Opposition move : ", opposition_best_move)
+        result = my_board.place_duck_piece(opposition_best_move)
+        if result == "Can't make that move":
+            opposition_best_move_index += 1
+        else:
+            break
+
+        if opposition_best_move_index >= len(opposition_best_moves):
+            print("No moves left for the duck piece to block")
+            while True:
+                random_row = random.randint(2, 9)
+                random_col = random.randint(1, 8)
+                random_position = (random_row, random_col)
+                random_notation = my_board.index_to_notation(random_position)
+                if my_board.get_piece(random_position) == " ":
+                    my_board.place_duck_piece(("D", None, random_notation))
+                    print(
+                        f"Placing the duck piece at a random square: {random_notation}")
+                    break
+            break
+
+    my_board.print_board()
+    print("evalcount", evalcount)
+    evalcount = 0
 print(my_board.evaluate_score())
